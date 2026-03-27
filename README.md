@@ -4,14 +4,14 @@ Speculative decoding on Apple Silicon using the **Neural Engine (ANE)** for draf
 
 ## Result
 
-**1.14x average speedup** over autoregressive baseline on M4 16GB:
+**1.12x average speedup** over autoregressive baseline on M4 16GB:
 
 | Config | tok/s | Speedup | Acceptance |
 |--------|-------|---------|------------|
-| Qwen2.5-14B Q4 baseline (GPU only) | 10.5 | 1.00x | — |
-| **+ 0.5B draft on ANE (INT8, pipelined)** | **12.0** | **1.14x** | **76%** |
+| Qwen2.5-14B Q4 baseline (GPU only) | 10.7 | 1.00x | — |
+| **+ 0.5B draft on ANE (INT8, pipelined)** | **11.9** | **1.12x** | **74%** |
 
-Measured across 5 diverse prompts, 80 tokens each. Fully reproducible.
+Measured across **25 diverse prompts**, 80 tokens each. **22/25 prompts faster than baseline** (88% win rate). Range: 0.95x–1.24x. Fully reproducible.
 
 ## Why This Matters
 

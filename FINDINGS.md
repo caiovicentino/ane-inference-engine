@@ -97,16 +97,40 @@ The draft model only needs recent context for next-token prediction. 64 tokens i
 
 Each optimization is additive and independently measurable.
 
-## Per-Prompt Results
+## Per-Prompt Results (25 prompts, 80 tokens each)
 
-| Prompt | Baseline | Pipelined | Speedup | Acceptance | Prefetch |
-|--------|----------|-----------|---------|------------|----------|
-| Prime function | 10.7 | 12.3 | 1.16x | 72% | 70% |
-| Recursion concept | 10.8 | 11.8 | 1.09x | 76% | 74% |
-| Meaning of life | 10.4 | 12.1 | 1.16x | 76% | 74% |
-| Binary search | 10.3 | 11.7 | 1.14x | 74% | 72% |
-| List vs tuple | 10.5 | 12.2 | 1.16x | 80% | 78% |
-| **Average** | **10.5** | **12.0** | **1.14x** | **76%** | **74%** |
+| # | Prompt | Base | Pipe | Speedup | Acc | Prefetch |
+|---|--------|------|------|---------|-----|----------|
+| 1 | Prime check function | 11.0 | 11.8 | 1.08x | 72% | 70% |
+| 2 | Binary search | 10.8 | 12.3 | 1.14x | 74% | 72% |
+| 3 | Fibonacci recursive | 10.8 | 13.2 | 1.22x | 82% | 80% |
+| 4 | Linked list class | 10.7 | 13.2 | 1.24x | 84% | 82% |
+| 5 | Merge sort | 10.6 | 12.6 | 1.19x | 74% | 72% |
+| 6 | Stack implementation | 11.2 | 13.6 | 1.21x | 86% | 84% |
+| 7 | Recursion concept | 11.0 | 12.0 | 1.09x | 76% | 74% |
+| 8 | List vs tuple | 10.5 | 13.0 | 1.24x | 80% | 78% |
+| 9 | Garbage collection | 10.8 | 12.3 | 1.14x | 80% | 78% |
+| 10 | TCP vs UDP | 10.8 | 12.1 | 1.12x | 74% | 72% |
+| 11 | OOP explanation | 10.8 | 10.3 | 0.95x | 53% | 51% |
+| 12 | Hash table | 10.7 | 12.4 | 1.16x | 80% | 78% |
+| 13 | Meaning of life | 10.3 | 11.9 | 1.15x | 76% | 74% |
+| 14 | Capital of France | 10.5 | 11.6 | 1.11x | 74% | 72% |
+| 15 | Einstein birthplace | 10.6 | 10.4 | 0.98x | 54% | 54% |
+| 16 | Speed of light | 10.2 | 12.1 | 1.19x | 78% | 76% |
+| 17 | Water boiling point | 10.4 | 12.1 | 1.15x | 80% | 78% |
+| 18 | Largest planet | 10.7 | 10.9 | 1.01x | 63% | 61% |
+| 19 | Once upon a time | 10.8 | 11.7 | 1.09x | 70% | 68% |
+| 20 | Future of AI | 10.5 | 11.7 | 1.11x | 76% | 74% |
+| 21 | Gradient descent | 10.4 | 11.5 | 1.11x | 67% | 65% |
+| 22 | Transformer architecture | 10.7 | 11.0 | 1.03x | 69% | 67% |
+| 23 | Docker vs VMs | 10.8 | 10.8 | 1.00x | 65% | 63% |
+| 24 | TCP handshake | 11.0 | 12.4 | 1.13x | 82% | 82% |
+| 25 | Hash functions | 11.0 | 11.4 | 1.04x | 70% | 70% |
+| | **Average** | **10.7** | **11.9** | **1.12x** | **74%** | **72%** |
+
+**Statistics**: std=0.079, range=0.95x–1.24x, wins=22/25 (88%)
+
+**Pattern**: Acceptance > 70% → speedup > 1.10x consistently. The 3 losses all had acceptance < 65%.
 
 ## What Didn't Work
 

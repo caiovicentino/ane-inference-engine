@@ -160,6 +160,8 @@ See [FINDINGS.md](FINDINGS.md) for the full analysis. Key takeaways:
 
 ## Comprehensive Benchmark Results
 
+### Mac mini M4 (16GB) — Reference Hardware
+
 | Main Model | Draft | Method | tok/s | vs Baseline |
 |---|---|---|---|---|
 | 1.5B Q4 | 0.5B ANE | Sync N=4 | 7.8 | 0.83x |
@@ -168,6 +170,17 @@ See [FINDINGS.md](FINDINGS.md) for the full analysis. Key takeaways:
 | 14B Q4 | 0.5B ANE | **Pipelined N=1 INT8** | **12.0** | **1.14x** |
 | 14B Q4 | 80M distilled | Sync N=4 | 4.4 | 0.48x |
 | 14B Q4 | 43M distilled | Sync N=4 | 3.9 | 0.42x |
+
+### MacBook Pro M3 Max (36GB) — Community Benchmark
+
+| Main Model | Draft | Method | Baseline | Spec tok/s | Speedup |
+|---|---|---|---|---|---|
+| 32B Q4_K_M | 0.5B ANE | Pipelined N=1 | 12.0 | 10.9 | 0.91x |
+| 72B Q2_K | 0.5B ANE | Pipelined N=1 | 6.5 | 6.0 | 0.92x |
+| 72B Q2_K (slow prompts) | 0.5B ANE | Pipelined N=1 | 3.5-4.2 | 3.8-4.5 | **1.09x** |
+| 32B Q4_K_M | 1.5B ANE | Pipelined N=1 | 12.0 | 2.5 | 0.22x |
+
+**Key Insight**: M3 Max's 40-core GPU is **too fast** for speculative decoding to help with 32B-72B quantized models. Speedup appears only when baseline drops below ~4 tok/s. The 1.5B draft achieves 96% acceptance but its 62ms ANE latency (vs 21ms for 0.5B) negates the benefit.
 
 ## Known Limitations
 
@@ -180,8 +193,9 @@ See [FINDINGS.md](FINDINGS.md) for the full analysis. Key takeaways:
 
 - **Direct ANE access** (bypass CoreML) for KV cache support
 - **Multi-token prediction heads** on the draft model
-- **Larger main models** (32B+) where the speedup compounds
-- **Apple Silicon M4 Pro/Max/Ultra** with faster ANE
+- **Larger main models** (100B+) where the speedup compounds
+- **Hardware-specific draft sizing** — 0.5B optimal for M4 mini, potentially larger for future chips
+- **Faster ANE chips** — M4 Pro/Max/Ultra or future generations with improved ANE throughput
 
 ## Based On
 

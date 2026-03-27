@@ -270,6 +270,83 @@ python tools/convert_draft.py --model models/0.5B --seq-len 64 --int8
 python benchmarks/end_to_end.py --draft draft.mlpackage --main model.gguf --pipelined
 ```
 
+## Community Hardware Benchmarks
+
+### MacBook Pro M3 Max (36GB)
+
+**Hardware**:
+- **Chip**: Apple M3 Max
+- **GPU**: 40-core Metal GPU
+- **ANE**: 16-core Neural Engine
+- **Memory**: 36GB unified memory
+- **Bandwidth**: ~400 GB/s (estimated)
+
+**Key Finding**: The M3 Max GPU is **too fast** for speculative decoding to provide speedup with 32B-72B quantized models. The powerful 40-core GPU processes tokens faster than the ANE overhead can be amortized.
+
+#### ANE Performance Comparison
+
+| Metric | M4 mini (16GB) | M3 Max (36GB) |
+|--------|----------------|---------------|
+| 0.5B draft latency | 14ms | 21ms |
+| 0.5B throughput | 71 tok/s | 47 tok/s |
+| 1.5B draft latency | N/A | 62ms |
+| 1.5B throughput | N/A | 16 tok/s |
+
+**Observation**: The M3 Max ANE is ~1.5x slower than M4 mini for the same 0.5B model. This may be due to architectural differences or thermal constraints.
+
+#### Main Model Benchmarks
+
+| Model | Baseline tok/s | Spec tok/s (N=1) | Accept | Speedup |
+|-------|----------------|------------------|--------|---------|
+| 32B Q4_K_M | 12.0 | 10.9 | 77.8% | **0.91x** |
+| 72B Q2_K | 6.5 | 6.0 | 57-78% | **0.92x** |
+| 72B Q2_K (slow prompts) | 3.5-4.2 | 3.8-4.5 | 78-85% | **1.09x** ✅ |
+
+#### Draft Model Comparison (with 32B Q4 main)
+
+| Draft Model | ANE Latency | Acceptance | Throughput | Speedup |
+|-------------|-------------|------------|------------|---------|
+| 0.5B | 21ms | 82.1% | 10.7 tok/s | 0.89x |
+| 1.5B | 62ms | 96.2% | 2.5 tok/s | 0.22x |
+
+**Insight**: The 1.5B draft achieves 96.2% acceptance (vs 82.1% for 0.5B), but the 3x slower ANE inference makes it net negative. The optimal draft model size is hardware-dependent.
+
+#### Why No Speedup on M3 Max?
+
+The speculative decoding equation:
+
+```
+Speedup requires: Time(ANE draft) + Time(GPU verify N) < Time(GPU baseline × N)
+```
+
+On M3 Max with 32B Q4 (baseline = 12 tok/s = 83ms/token):
+- ANE draft: 21ms
+- GPU verify (N=1): ~83ms
+- Total: 104ms for ~1.82 tokens (82% accept)
+- Effective: 17.5 tok/s... but coordination overhead brings it to 10.9 tok/s
+
+The **21ms ANE overhead** per cycle reduces the effective throughput. On M4 mini with 14B (baseline = 10.5 tok/s = 95ms/token), the same 14ms ANE overhead is proportionally smaller.
+
+#### Scaling Prediction for M3 Max
+
+| Model Size | Est. Baseline | Est. Speedup |
+|------------|---------------|--------------|
+| 32B Q4 | 12 tok/s | 0.9x |
+| 72B Q2 | 4-6 tok/s | 0.9-1.1x |
+| 72B Q4 | ~3 tok/s | ~1.2x (projected) |
+| 128B Q2 | ~1.5 tok/s | ~1.5x (projected) |
+
+**Conclusion**: On M3 Max, speculative decoding becomes beneficial for models where baseline is <4 tok/s. This requires 72B+ at Q4 quantization or larger models.
+
+#### Benchmark Scripts
+
+The following scripts were created for M3 Max testing:
+
+- `benchmarks/bench_32b.py` - Generic baseline vs speculative comparison
+- `benchmarks/bench_72b_real.py` - Real prompt testing with multiple scenarios
+
+---
+
 ## Future Directions
 
 1. **Direct ANE access**: Bypass CoreML to use KV cache on ANE. This alone could 10x the draft speed.
@@ -277,3 +354,4 @@ python benchmarks/end_to_end.py --draft draft.mlpackage --main model.gguf --pipe
 3. **Larger main models**: 32B+ on M4 Max/Ultra where baseline is slower.
 4. **Dynamic sequence length**: Use shorter context for easy tokens, longer for harder ones.
 5. **Apple Intelligence integration**: If Apple exposes ANE scheduling APIs, more efficient overlap.
+6. **Hardware-specific tuning**: Different draft model sizes for different Apple Silicon variants (0.5B for M4 mini, potentially 1.5B for future chips with faster ANE).

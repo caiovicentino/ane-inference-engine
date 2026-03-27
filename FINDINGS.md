@@ -211,6 +211,38 @@ Speedup: 14.7 / 10.5 = 1.40x theoretical max
 
 We achieved 1.14x / 1.40x = **81% of theoretical maximum**. The gap is coordination overhead, KV cache management, and imperfect overlap.
 
+## ANE Bandwidth and GPU Contention
+
+We measured real bandwidth utilization during inference:
+
+### ANE Bandwidth
+| Metric | Value |
+|--------|-------|
+| Weight file size (INT8) | 496 MB |
+| ANE forward pass | 14.1ms |
+| ANE throughput | 25.7 GB/s (117% of 22 GB/s spec) |
+| ANE degradation during GPU | **0%** |
+
+The ANE is **fully saturated** — no headroom. The 22 GB/s from the original PoC was conservative; the M4's ANE actually delivers ~26 GB/s.
+
+### GPU Contention
+| Scenario | GPU ms/tok | Degradation |
+|----------|-----------|-------------|
+| GPU solo (baseline) | 89.4ms | — |
+| GPU during pipelined inference | 99.2ms | **+11%** |
+| GPU during 100% ANE stress test | 156ms | +41.5% |
+
+During real pipelined inference, the ANE is only active ~12% of each cycle (14ms out of ~120ms). This limits GPU degradation to **11%**, not the 41.5% seen under synthetic stress test.
+
+### Impact on Speedup
+
+The 11% GPU degradation reduces the effective speedup:
+- Without contention: theoretical ~1.25x
+- With 11% contention: measured **1.12x**
+- The contention costs ~0.13x of potential speedup
+
+**Conclusion**: The speedup is real but modest. The GPU memory bandwidth contention from concurrent ANE access is the main limiting factor, not the ANE speed itself.
+
 ## Hardware Details
 
 All measurements on:

@@ -1,8 +1,10 @@
 # ANE Inference Engine — Design Document
 
+> **Note**: This was the original design document. For actual results and analysis, see [FINDINGS.md](FINDINGS.md). The final measured speedup was 1.14x (not the 3.3x target). The architecture proved correct — the bottleneck was CoreML's lack of KV cache support.
+
 **A heterogeneous LLM inference engine for Apple Silicon that runs the draft model on ANE and the main model on GPU simultaneously.**
 
-Target: **3.3x speedup** over single-GPU inference (27 → 85 tok/s on M4).
+Original target: **3.3x speedup** over single-GPU inference (27 → 85 tok/s on M4).
 
 ## The Problem
 

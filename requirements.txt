@@ -3,3 +3,6 @@ torch>=2.7
 numpy
 transformers
 sentencepiece
+safetensors
+huggingface_hub
+pytest

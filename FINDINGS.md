@@ -214,11 +214,13 @@ We achieved 1.14x / 1.40x = **81% of theoretical maximum**. The gap is coordinat
 ## Hardware Details
 
 All measurements on:
-- MacBook Pro M4 (10-core CPU, 10-core GPU, 16-core ANE)
+- **Mac mini M4** (Model Mac16,10 / MU9D3LL/A)
+- 10-core CPU (4P + 6E), 10-core GPU, 16-core ANE
 - 16GB unified memory
-- macOS 15.x
+- macOS 15.x (Darwin 25.3.0)
 - CoreML (coremltools 8.x) for ANE
 - llama.cpp (llama-cpp-python) for Metal GPU
+- Python 3.9, PyTorch 2.8
 
 ## Reproduction
 
